@@ -69,9 +69,9 @@ const ProfilePage = () => {
           full_name: data.full_name || "",
           child_name: data.child_name || "",
           email: user.email || "",
-          phone: "",
-          allergy_info: "",
-          observation: "",
+          phone: data.phone || "",
+          allergy_info: data.allergy_info || "",
+          observation: data.observation || "",
         });
       } else {
         setProfile(prev => ({
@@ -97,6 +97,9 @@ const ProfilePage = () => {
         user_id: user.id,
         full_name: profile.full_name,
         child_name: profile.child_name,
+        phone: profile.phone,
+        allergy_info: profile.allergy_info,
+        observation: profile.observation,
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'user_id'

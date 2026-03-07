@@ -23,15 +23,15 @@ const ChatWidget = () => {
     }, 300);
   };
 
-  const handleSubmit = async (type: "suggestion" | "feedback") => {
+  const handleSubmit = async (type: "suggestion" | "feedback" | "support") => {
     if (!user || !content.trim()) return;
 
     setSending(true);
 
-    const table = type === "suggestion" ? "suggestions" : "feedback";
+    const table = type === "suggestion" ? "suggestions" : type === "feedback" ? "feedback" : "suggestions";
     const { error } = await supabase.from(table).insert({
       user_id: user.id,
-      content: content.trim(),
+      content: type === "support" ? `[Suporte] ${content.trim()}` : content.trim(),
     });
 
     setSending(false);
@@ -43,8 +43,9 @@ const ChatWidget = () => {
         variant: "destructive",
       });
     } else {
+      const titles = { suggestion: "Sugestão enviada!", feedback: "Feedback enviado!", support: "Mensagem enviada!" };
       toast({
-        title: type === "suggestion" ? "Sugestão enviada!" : "Feedback enviado!",
+        title: titles[type],
         description: "Obrigado por nos ajudar a melhorar! 💚",
       });
       handleClose();
@@ -168,7 +169,8 @@ const ChatWidget = () => {
                   className="w-full p-3 pr-12 rounded-xl border-2 border-input bg-background resize-none h-24 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 />
                 <button
-                  disabled={!content.trim()}
+                  onClick={() => handleSubmit("support")}
+                  disabled={!content.trim() || sending}
                   className="absolute bottom-3 right-3 p-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:brightness-105"
                 >
                   <Send className="w-4 h-4" />

@@ -5,7 +5,16 @@ import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import mascotImage from "@/assets/mascot.png";
+
+const PROFILE_TYPES = [
+  { value: "alergica", label: "Pessoa Alérgica" },
+  { value: "mae", label: "Mãe da Pessoa Alérgica" },
+  { value: "pai", label: "Pai da Pessoa Alérgica" },
+  { value: "farmaceutico", label: "Farmacêutico(a)" },
+  { value: "medico", label: "Médico(a)" },
+];
 
 // Validation schemas
 const emailSchema = z.string().trim().email({ message: "Email inválido" });
@@ -26,6 +35,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [profileType, setProfileType] = useState("mae");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { signIn, signUp, user } = useAuth();
@@ -127,9 +137,9 @@ const AuthPage = () => {
     
     setLoading(true);
     const { error } = await signUp(email, password, fullName);
-    setLoading(false);
-    
+
     if (error) {
+      setLoading(false);
       let message = error.message;
       if (error.message.includes("already registered")) {
         message = "Este email já está cadastrado. Tente fazer login.";
@@ -140,6 +150,13 @@ const AuthPage = () => {
         description: message,
       });
     } else {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        await supabase
+          .from("profiles")
+          .upsert({ user_id: userData.user.id, profile_type: profileType }, { onConflict: "user_id" });
+      }
+      setLoading(false);
       toast({
         title: "Conta criada com sucesso!",
         description: "Bem-vinda ao AlerGica!",
@@ -173,19 +190,16 @@ const AuthPage = () => {
             
             {/* Tagline */}
             <div className="text-center">
-              <p className="text-xl font-medium text-foreground/80 leading-relaxed">
-                Eu sou o <span className="text-primary font-bold">AlerGica</span>,
+              <p className="text-xl font-medium text-foreground/90 leading-relaxed">
+                 Eu sou a AlerGica,
               </p>
-              <p className="text-xl font-medium text-foreground/80 leading-relaxed">
-                seu ajudante para cuidar do seu bem-estar.
+              <p className="text-xl font-medium text-foreground/90 leading-relaxed">
+                a assistente estratégica para sua saúde e bem-estar.
               </p>
-              <p className="text-muted-foreground mt-3 leading-relaxed">
-                Aqui você vai consultar alimentos e remédios para evitar <span className="text-primary font-semibold">sustos</span> e ficar <span className="text-primary font-semibold">seguro</span>.
+              <br />
+              <p className="text-xl font-medium text-foreground/90 leading-relaxed">
+                Com nossa tecnologia, você consulta <span className="text-primary font-semibold">medicamentos</span> e <span className="text-primary font-semibold">alimentos</span>, descobrindo alérgenos ocultos, para que você viva com mais segurança e menos sustos.
               </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Vamos lá?
-              </p>
-              <p className="text-2xl mt-2">😊</p>
               
               {/* Continue Button */}
               <div className="mt-8">
@@ -226,18 +240,15 @@ const AuthPage = () => {
           {/* Tagline */}
           <div className="text-center">
             <p className="text-xl font-medium text-foreground/80 leading-relaxed">
-              Eu sou o <span className="text-primary font-bold">AlerGica</span>,
-            </p>
-            <p className="text-xl font-medium text-foreground/80 leading-relaxed">
-              seu ajudante para cuidar do seu bem-estar.
-            </p>
-            <p className="text-muted-foreground mt-3 leading-relaxed">
-              Aqui você vai consultar alimentos e remédios para evitar <span className="text-primary font-semibold">sustos</span> e ficar <span className="text-primary font-semibold">seguro</span>.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              Vamos lá?
-            </p>
-            <p className="text-2xl mt-2">😊</p>
+                 Eu sou a AlerGica,
+              </p>
+              <p className="text-xl font-medium text-foreground/80 leading-relaxed">
+                a assistente estratégica para sua saúde e bem-estar.
+              </p>
+              <p className="text-xl font-medium text-foreground/80 leading-relaxed">
+                Com nossa tecnologia, você consulta <span className="text-primary font-semibold">medicamentos</span> e <span className="text-primary font-semibold">alimentos</span>, descobrindo alérgenos ocultos, para que você viva com mais segurança e menos sustos.
+              </p>
+              <p className="text-2xl mt-2">😊</p>
           </div>
         </div>
       </div>
@@ -423,6 +434,25 @@ const AuthPage = () => {
                   </button>
                 </div>
                 {errors.confirmPassword && <p className="text-sm text-destructive mt-1">{errors.confirmPassword}</p>}
+              </div>
+
+               <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Quem é você?</label>
+                <select
+                  value={profileType || ""}
+                  onChange={(e) => setProfileType(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="" disabled>
+                    Selecione uma opção
+                  </option>
+
+                  {PROFILE_TYPES.map((pt) => (
+                    <option key={pt.value} value={pt.value}>
+                      {pt.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-50">

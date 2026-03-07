@@ -1,0 +1,100 @@
+import { supabase } from "@/integrations/supabase/client";
+
+export type MedRow = {
+  id: string;
+  nome_principal: string;
+  nome_alternativo: string | null;
+  nome_completo: string | null;
+  tem_risco_aplv: boolean | null;
+  nivel_alerta: string | null;
+  access_count: number;
+};
+
+export type MedicationDetail = MedRow & {
+  composicao: string | null;
+  termos_encontrados: string | null;
+  avisos: string | null;
+  detalhes_criticos: string | null;
+  detalhes_atencao: string | null;
+  arquivo_url: string | null;
+  data_extracao: string | null;
+};
+
+const LIST_SELECT =
+  "id, nome_principal, nome_alternativo, nome_completo, tem_risco_aplv, nivel_alerta, access_count";
+
+export const medToRisk = (
+  temRisco: boolean | null | undefined,
+  nivel: string | null | undefined,
+): "safe" | "caution" | "risk" => {
+  const n = (nivel ?? "").toLowerCase();
+  if (n.includes("crítico") || n.includes("critico") || n.includes("proibido")) return "risk";
+  if (n.includes("atenção") || n.includes("atencao") || n.includes("cuidado")) return "caution";
+  if (temRisco === true) return "risk";
+  if (temRisco === false) return "safe";
+  if (n.includes("seguro") || n.includes("liberado")) return "safe";
+  return "caution";
+};
+
+/** Parse a JSON-array-in-text field into a clean string list. */
+export const parseTextField = (raw: string | null): string[] => {
+  if (!raw) return [];
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("[")) {
+    try {
+      const arr = JSON.parse(trimmed);
+      if (Array.isArray(arr)) return arr.map((s: unknown) => String(s).trim()).filter(Boolean);
+    } catch { /* not valid JSON, treat as plain text */ }
+  }
+  return [trimmed];
+};
+
+export const getPopularMedications = async (): Promise<MedRow[]> => {
+  const { data, error } = await supabase
+    .from("medications")
+    .select(LIST_SELECT)
+    .order("access_count", { ascending: false })
+    .limit(6);
+  if (error) throw error;
+  return data ?? [];
+};
+
+export const getRecentMedications = async (limit = 10): Promise<MedRow[]> => {
+  const { data, error } = await supabase
+    .from("medications")
+    .select(LIST_SELECT)
+    .order("nome_principal", { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+};
+
+export const searchMedications = async (q: string, limit = 12): Promise<MedRow[]> => {
+  const { data, error } = await supabase
+    .from("medications")
+    .select(LIST_SELECT)
+    .or(
+      `nome_principal.ilike.%${q}%,nome_alternativo.ilike.%${q}%,nome_completo.ilike.%${q}%`
+    )
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+};
+
+export const getMedication = async (id: string): Promise<MedicationDetail> => {
+  const { data, error } = await supabase
+    .from("medications")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) throw error;
+  return data as MedicationDetail;
+};
+
+export const recordMedicationView = async (id: string) => {
+  try {
+    await supabase.rpc("increment_medication_access", { med_id: id });
+  } catch {
+    // fire-and-forget
+  }
+};

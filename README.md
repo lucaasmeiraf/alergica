@@ -71,3 +71,33 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+---
+
+## Backend & News API
+
+A lightweight FastAPI backend lives in `backend/`. It exposes a `/news` GET
+endpoint that fetches APLV-related articles from NewsAPI using the key stored in
+an environment variable on the server. This keeps `NEWS_API_KEY` off the client
+bundle and avoids CORS issues.
+
+### Running the backend
+
+```bash
+cd backend
+python -m venv .venv        # or use your preferred env tool
+pip install -r requirements.txt
+export NEWS_API_KEY="..."   # on Windows use PowerShell: $env:NEWS_API_KEY="..."
+uvicorn app.main:app --reload
+```
+
+After starting the server, the frontend (at `http://localhost:8080` by default)
+will call `http://localhost:8000/news`. The base URL is configurable via the
+`VITE_BACKEND_URL` variable in `.env`.
+
+If you'd rather keep the news-fetching logic inside Supabase (so the client
+never touches the NewsAPI key), restore the original implementation of
+`fetchNews` in `APLVInfoCarousel.tsx` and deploy the `supabase/functions`
+handler; the frontend will simply call that function instead of the local
+backend.
+

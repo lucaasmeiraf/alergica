@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_d57a5bbd3dd7b8fd39ac5831a21ae29be034e25d npx supabase db push)"
+    ]
+  }
+}

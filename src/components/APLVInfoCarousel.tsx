@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { BookOpen, ExternalLink, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Carousel,
   CarouselContent,
@@ -10,6 +9,16 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+
+type Slide = {
+  titulo: string;
+  mensagem: string;
+  referencia: string;
+  url?: string;
+  isNews?: boolean;
+};
 
 const aplvInfoData = [
   {
@@ -68,6 +77,47 @@ const APLVInfoCarousel = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
+  const [slides, setSlides] = useState<Slide[]>(aplvInfoData);
+  const [refreshing, setRefreshing] = useState(false);
+  const { isAdmin } = useAuth();
+
+  const fetchNews = async () => {
+    try {
+      const res = await fetch("/api/news");
+      if (!res.ok) {
+        console.warn("backend news request failed", res.status);
+        return;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        console.info("backend returned no news");
+        return;
+      }
+
+      const newsSlides: Slide[] = data.map((a: any) => ({
+        titulo: a.title,
+        mensagem: a.description ?? "",
+        referencia: `${a.source} · ${new Date(a.publishedAt).toLocaleDateString("pt-BR")}`,
+        url: a.url,
+        isNews: true,
+      }));
+
+      setSlides([...newsSlides, ...aplvInfoData]);
+    } catch (err) {
+      console.error("fetchNews error", err);
+      // silently fall back to static data
+    }
+  };
+
+  const refreshNews = async () => {
+    setRefreshing(true);
+    await fetchNews();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
 
   useEffect(() => {
     if (!api) return;
@@ -88,10 +138,21 @@ const APLVInfoCarousel = () => {
             <BookOpen className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary" />
           </div>
           <h3 className="text-xs md:text-base lg:text-lg font-bold text-foreground">
-            Informações sobre APLV
+            Notícias
           </h3>
         </div>
         <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground self-end md:self-auto">
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refreshNews}
+              disabled={refreshing}
+              className="h-6 w-6 p-0"
+            >
+              <RefreshCw className={`h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          )}
           <span>{current + 1}</span>
           <span>/</span>
           <span>{count}</span>
@@ -107,35 +168,62 @@ const APLVInfoCarousel = () => {
         className="w-full"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
-          {aplvInfoData.map((item, index) => (
+          {slides.map((item, index) => (
             <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-              <Card className="card-soft h-full border-primary/10 bg-gradient-to-br from-card to-secondary/30">
-                <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 flex flex-col h-full">
-                  <h4 className="text-sm md:text-base lg:text-lg font-bold text-foreground mb-2 md:mb-3 line-clamp-2">
-                    {item.titulo}
-                  </h4>
-                  <p className="text-muted-foreground text-xs md:text-sm leading-relaxed mb-3 md:mb-4 flex-1">
-                    {item.mensagem}
-                  </p>
-                  <div className="pt-3 md:pt-4 border-t border-border/50">
-                    <p className="text-xs text-muted-foreground/80 italic">
-                      📚 {item.referencia}
+              {item.url ? (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block h-full group"
+                >
+                  <Card className="card-soft h-full border-primary/10 bg-gradient-to-br from-card to-secondary/30 cursor-pointer transition-all duration-200 group-hover:border-primary/30 group-hover:shadow-md">
+                    <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 flex flex-col h-full">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-primary mb-1">Notícia</span>
+                      <h4 className="text-sm md:text-base lg:text-lg font-bold text-foreground mb-2 md:mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                        {item.titulo}
+                      </h4>
+                      <p className="text-muted-foreground text-xs md:text-sm leading-relaxed mb-3 md:mb-4 flex-1 line-clamp-4">
+                        {item.mensagem}
+                      </p>
+                      <div className="pt-3 md:pt-4 border-t border-border/50 flex items-end justify-between gap-2">
+                        <p className="text-xs text-muted-foreground/80 italic">
+                          🗞️ {item.referencia}
+                        </p>
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0 text-primary/50 group-hover:text-primary transition-colors" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </a>
+              ) : (
+                <Card className="card-soft h-full border-primary/10 bg-gradient-to-br from-card to-secondary/30">
+                  <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 flex flex-col h-full">
+                    <h4 className="text-sm md:text-base lg:text-lg font-bold text-foreground mb-2 md:mb-3 line-clamp-2">
+                      {item.titulo}
+                    </h4>
+                    <p className="text-muted-foreground text-xs md:text-sm leading-relaxed mb-3 md:mb-4 flex-1 line-clamp-4">
+                      {item.mensagem}
                     </p>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="pt-3 md:pt-4 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground/80 italic">
+                        📚 {item.referencia}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </CarouselItem>
           ))}
         </CarouselContent>
         <div className="flex items-center justify-center gap-2 mt-6">
           <CarouselPrevious className="static translate-y-0 bg-card border-primary/20 hover:bg-primary/10 hover:border-primary/40" />
           <div className="flex gap-1.5">
-            {aplvInfoData.map((_, index) => (
+            {slides.map((_, index) => (
               <button
                 key={index}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === current 
-                    ? "bg-primary w-6" 
+                  index === current
+                    ? "bg-primary w-6"
                     : "bg-primary/30 hover:bg-primary/50"
                 }`}
                 onClick={() => api?.scrollTo(index)}
