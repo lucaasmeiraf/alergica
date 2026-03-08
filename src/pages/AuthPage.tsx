@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, Calendar, MapPin, Briefcase, MailCheck } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Calendar, MapPin, Briefcase /*, MailCheck*/ } from "lucide-react";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -55,8 +55,8 @@ const AuthPage = () => {
   const [uf, setUf] = useState("");
   const [profession, setProfession] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [emailSent, setEmailSent] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
+  // const [emailSent, setEmailSent] = useState(false);       // Desabilitado: confirmação de e-mail
+  // const [registeredEmail, setRegisteredEmail] = useState(""); // Desabilitado: confirmação de e-mail
 
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -164,7 +164,7 @@ const AuthPage = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateSignup()) return;
-    
+
     setLoading(true);
     const { error } = await signUp(email, password, fullName);
 
@@ -179,25 +179,44 @@ const AuthPage = () => {
         title: "Erro ao criar conta",
         description: message,
       });
-    } else {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user) {
-        await supabase
-          .from("profiles")
-          .upsert({
-            user_id: userData.user.id,
-            profile_type: profileType,
-            birth_date: birthDate || null,
-            gender: gender || null,
-            city: city.trim() || null,
-            state: uf || null,
-            profession: profession.trim() || null,
-          }, { onConflict: "user_id" });
-      }
-      setLoading(false);
-      setRegisteredEmail(email);
-      setEmailSent(true);
+      return;
     }
+
+    // Salva perfil complementar
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData?.user) {
+      await supabase
+        .from("profiles")
+        .upsert({
+          user_id: userData.user.id,
+          profile_type: profileType,
+          birth_date: birthDate || null,
+          gender: gender || null,
+          city: city.trim() || null,
+          state: uf || null,
+          profession: profession.trim() || null,
+        }, { onConflict: "user_id" });
+    }
+
+    // Login automático após cadastro
+    const { error: loginError } = await signIn(email, password);
+    setLoading(false);
+
+    if (loginError) {
+      toast({
+        variant: "destructive",
+        title: "Conta criada, mas erro ao entrar",
+        description: "Faça o login manualmente.",
+      });
+      setActiveTab("login");
+    } else {
+      navigate("/dashboard");
+    }
+
+    // === CONFIRMAÇÃO DE E-MAIL (desabilitada por ora) ===
+    // setRegisteredEmail(email);
+    // setEmailSent(true);
+    // =====================================================
   };
 
   return (
@@ -306,7 +325,7 @@ const AuthPage = () => {
             </h1>
           </div>
 
-          {/* Tela de confirmação de e-mail */}
+          {/* === TELA DE CONFIRMAÇÃO DE E-MAIL (desabilitada por ora) ===
           {emailSent && (
             <div className="flex flex-col items-center text-center animate-fade-in space-y-6 py-8">
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
@@ -346,9 +365,10 @@ const AuthPage = () => {
               </Button>
             </div>
           )}
+          ============================================================ */}
 
-          {/* Tabs + formulários + footer — ocultados na tela de confirmação */}
-          {!emailSent && (<><div className="flex gap-2 mb-8 p-1.5 bg-secondary rounded-xl">
+          {/* Tabs + formulários + footer */}
+          {true && (<><div className="flex gap-2 mb-8 p-1.5 bg-secondary rounded-xl">
             <button
               onClick={() => { setActiveTab("login"); setErrors({}); }}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-200 ${
