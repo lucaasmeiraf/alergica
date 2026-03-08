@@ -214,8 +214,8 @@ const Dashboard = () => {
                             <MedicationCard
                               name={med.nome_principal}
                               laboratory={med.nome_alternativo ?? ""}
-                              riskLevel={medToRisk(med.tem_risco_aplv, med.nivel_alerta)}
-                              riskText={RISK_TEXT[medToRisk(med.tem_risco_aplv, med.nivel_alerta)] ?? med.nivel_alerta ?? ""}
+                              riskLevel={medToRisk(med.tem_risco_aplv, med.nivel_alerta, med.avisos)}
+                              riskText={RISK_TEXT[medToRisk(med.tem_risco_aplv, med.nivel_alerta, med.avisos)] ?? med.nivel_alerta ?? ""}
                             />
                           </Link>
                         ))}
@@ -267,8 +267,8 @@ const Dashboard = () => {
                             <MedicationCard
                               name={med.nome_principal}
                               laboratory={med.nome_alternativo ?? ""}
-                              riskLevel={medToRisk(med.tem_risco_aplv, med.nivel_alerta)}
-                              riskText={RISK_TEXT[medToRisk(med.tem_risco_aplv, med.nivel_alerta)] ?? med.nivel_alerta ?? ""}
+                              riskLevel={medToRisk(med.tem_risco_aplv, med.nivel_alerta, med.avisos)}
+                              riskText={RISK_TEXT[medToRisk(med.tem_risco_aplv, med.nivel_alerta, med.avisos)] ?? med.nivel_alerta ?? ""}
                             />
                           </Link>
                         ))}
