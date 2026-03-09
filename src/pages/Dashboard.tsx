@@ -168,7 +168,7 @@ const Dashboard = () => {
       </Drawer>
 
       <main className="flex-1 lg:ml-64 w-full">
-        <div className="w-full h-full p-4 md:p-6 lg:p-8 pb-28">
+        <div className="w-full h-full p-4 md:p-6 lg:p-8 pb-24 lg:pb-28">
           <div className="w-full max-w-4xl lg:max-w-7xl mx-auto">
 
             {/* Header */}
