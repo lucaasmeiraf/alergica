@@ -95,17 +95,27 @@ export default function ProductScanner() {
         video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
       setPermissionDenied(false);
       setStage("camera");
+      // Se o <video> já está montado (ex: flip de câmera), anexa imediatamente.
+      // Caso contrário, o useEffect abaixo cuida disso após a renderização.
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(console.error);
+      }
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "NotAllowedError") setPermissionDenied(true);
       console.error(err);
     }
   }, [facingMode]);
+
+  // Anexa o stream ao <video> quando ele monta pela primeira vez (stage "idle" → "camera")
+  useEffect(() => {
+    if (stage === "camera" && streamRef.current && videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(console.error);
+    }
+  }, [stage]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
