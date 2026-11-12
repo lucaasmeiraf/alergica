@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Search, Menu } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import MedicationCard from "@/components/MedicationCard";
@@ -54,12 +54,37 @@ const PlaceholderModule = ({ label }: { label: string }) => (
 );
 
 const Dashboard = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userProfileType, setUserProfileType] = useState<string | null>(null);
-  const [userName, setUserName] = useState("Mamãe");
+  const [userName, setUserName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeModule, setActiveModule] = useState<ModuleTab>("inicio");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeModule, setActiveModule] = useState<ModuleTab>(
+    (searchParams.get("module") as ModuleTab) || "inicio"
+  );
+
+  // Sync activeModule when URL search params change (e.g. sidebar click)
+  useEffect(() => {
+    const mod = searchParams.get("module") as ModuleTab | null;
+    if (mod && mod !== activeModule) {
+      setActiveModule(mod);
+    } else if (!mod && activeModule !== "inicio") {
+      setActiveModule("inicio");
+    }
+  }, [searchParams]);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+
+  // Sync search query to URL
+  const updateSearchQuery = (value: string) => {
+    setSearchQuery(value);
+    const newParams = new URLSearchParams(searchParams);
+    if (value.trim()) {
+      newParams.set("q", value);
+    } else {
+      newParams.delete("q");
+    }
+    setSearchParams(newParams, { replace: true });
+  };
   const [searchResults, setSearchResults] = useState<MedRow[]>([]);
   const [popularMedications, setPopularMedications] = useState<MedRow[]>([]);
   const [loadingPopular, setLoadingPopular] = useState(true);
@@ -89,6 +114,7 @@ const Dashboard = () => {
       if (profileRes.data?.profile_type) setUserProfileType(profileRes.data.profile_type);
       if (!onboardingRes.data) setShowOnboarding(true);
       if (profileRes.data?.full_name) setUserName(profileRes.data.full_name.split(" ")[0]);
+      else if (user?.user_metadata?.full_name) setUserName(user.user_metadata.full_name.split(" ")[0]);
       setPopularMedications(popular);
       setLoadingPopular(false);
     };
@@ -178,22 +204,18 @@ const Dashboard = () => {
                   <Menu className="w-5 h-5 text-foreground" />
                 </button>
                 <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-foreground text-center pr-2 mr-2 flex-1">
-                  Olá, {userName}! 👋
+                  Olá, {userName || "Usuário"}! 👋
                 </h2>
               </div>
 
-              {(activeModule === "inicio" || activeModule === "medicamentos") && (
+              {activeModule === "medicamentos" && (
                 <div className="relative">
                   <Search className="absolute left-3 md:left-4 lg:left-5 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={
-                      activeModule === "medicamentos"
-                        ? "Buscar medicamento..."
-                        : "Qual medicamento vamos conferir hoje, mamãe?"
-                    }
+                    onChange={(e) => updateSearchQuery(e.target.value)}
+                    placeholder="Buscar medicamento..."
                     className="w-full py-3 md:py-4 lg:py-5 px-8 md:px-8 lg:px-10 text-sm md:text-base lg:text-lg rounded-xl md:rounded-2xl border-2 border-input bg-card shadow-soft transition-all duration-200 focus:border-primary focus:ring-4 focus:ring-primary/20 focus:outline-none placeholder:text-muted-foreground/60"
                   />
                   {searching && (

@@ -45,15 +45,15 @@ const BabyManager = () => {
   const calculateAge = (birthDate: string): string => {
     const birth = new Date(birthDate);
     const today = new Date();
-    
+
     let years = today.getFullYear() - birth.getFullYear();
     let months = today.getMonth() - birth.getMonth();
-    
+
     if (months < 0) {
       years--;
       months += 12;
     }
-    
+
     if (today.getDate() < birth.getDate()) {
       months--;
       if (months < 0) {
@@ -89,7 +89,7 @@ const BabyManager = () => {
     if (error) {
       toast({
         title: "Erro ao adicionar",
-        description: "Não foi possível adicionar o bebê. Tente novamente.",
+        description: "Não foi possível adicionar o filho(a). Tente novamente.",
         variant: "destructive",
       });
     } else {
@@ -136,7 +136,7 @@ const BabyManager = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
           <Baby className="w-5 h-5 text-primary" />
-          Meus Bebês
+          Meus Filhos(as)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -155,9 +155,7 @@ const BabyManager = () => {
                   <div>
                     <p className="font-semibold text-foreground">{baby.name}</p>
                     {baby.birth_date && (
-                      <p className="text-sm text-muted-foreground">
-                        {calculateAge(baby.birth_date)}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{calculateAge(baby.birth_date)}</p>
                     )}
                   </div>
                 </div>
@@ -175,11 +173,10 @@ const BabyManager = () => {
 
         {/* Add New Baby Form */}
         <div className="pt-4 border-t border-border">
-          <p className="text-sm font-medium text-foreground mb-4">Adicionar novo bebê</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="baby_name" className="text-foreground">
-                Nome do Bebê
+                Nome do Filho(a)
               </Label>
               <div className="relative">
                 <Baby className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -187,7 +184,7 @@ const BabyManager = () => {
                   id="baby_name"
                   value={newBabyName}
                   onChange={(e) => setNewBabyName(e.target.value)}
-                  placeholder="Nome do bebê"
+                  placeholder="Nome do filho(a)"
                   className="input-soft pl-12"
                 />
               </div>
@@ -216,14 +213,12 @@ const BabyManager = () => {
             className="btn-primary mt-4 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            {adding ? "Adicionando..." : "Adicionar Bebê"}
+            {adding ? "Adicionando..." : "Adicionar Filho(a)"}
           </Button>
         </div>
 
         {babies.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            Você ainda não adicionou nenhum bebê.
-          </p>
+          <p className="text-sm text-muted-foreground text-center py-4">Você ainda não adicionou nenhum filho(a).</p>
         )}
       </CardContent>
     </Card>

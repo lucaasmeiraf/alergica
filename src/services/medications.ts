@@ -7,7 +7,7 @@ export type MedRow = {
   nome_completo: string | null;
   tem_risco_aplv: boolean | null;
   nivel_alerta: string | null;
-  avisos: string | null;
+  avisos: unknown;
   access_count: number;
 };
 
@@ -46,9 +46,12 @@ export const medToRisk = (
 };
 
 /** Parse a JSON-array-in-text field into a clean string list. */
-export const parseTextField = (raw: string | null): string[] => {
-  if (!raw) return [];
+export const parseTextField = (raw: unknown): string[] => {
+  if (raw == null) return [];
+  if (Array.isArray(raw)) return raw.map((s: unknown) => String(s).trim()).filter(Boolean);
+  if (typeof raw !== "string") return [String(raw)];
   const trimmed = raw.trim();
+  if (!trimmed) return [];
   if (trimmed.startsWith("[")) {
     try {
       const arr = JSON.parse(trimmed);
@@ -128,7 +131,7 @@ export const getMedication = async (id: string): Promise<MedicationDetail> => {
 
 export const recordMedicationView = async (id: string) => {
   try {
-    await supabase.rpc("increment_medication_access", { med_id: id });
+    await (supabase.rpc as any)("increment_medication_access", { med_id: id });
   } catch {
     // fire-and-forget
   }

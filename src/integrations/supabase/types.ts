@@ -10,34 +10,10 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
-      allergen_groups: {
-        Row: {
-          code: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
       babies: {
         Row: {
           birth_date: string | null
@@ -86,145 +62,125 @@ export type Database = {
         }
         Relationships: []
       }
-      ingredients: {
+      laboratories: {
         Row: {
-          allergen_group_id: string | null
-          cas_number: string | null
-          common_names: string[] | null
           created_at: string
           id: string
-          is_allergen: boolean
           name: string
-          notes: string | null
+          photo_url: string | null
           updated_at: string
         }
         Insert: {
-          allergen_group_id?: string | null
-          cas_number?: string | null
-          common_names?: string[] | null
           created_at?: string
           id?: string
-          is_allergen?: boolean
           name: string
-          notes?: string | null
+          photo_url?: string | null
           updated_at?: string
         }
         Update: {
-          allergen_group_id?: string | null
-          cas_number?: string | null
-          common_names?: string[] | null
           created_at?: string
           id?: string
-          is_allergen?: boolean
           name?: string
-          notes?: string | null
+          photo_url?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "ingredients_allergen_group_id_fkey"
-            columns: ["allergen_group_id"]
-            isOneToOne: false
-            referencedRelation: "allergen_groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      medication_ingredients: {
-        Row: {
-          id: string
-          ingredient_id: string
-          is_excipient: boolean
-          medication_id: string
-          notes: string | null
-          quantity: string | null
-        }
-        Insert: {
-          id?: string
-          ingredient_id: string
-          is_excipient?: boolean
-          medication_id: string
-          notes?: string | null
-          quantity?: string | null
-        }
-        Update: {
-          id?: string
-          ingredient_id?: string
-          is_excipient?: boolean
-          medication_id?: string
-          notes?: string | null
-          quantity?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "medication_ingredients_ingredient_id_fkey"
-            columns: ["ingredient_id"]
-            isOneToOne: false
-            referencedRelation: "ingredients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "medication_ingredients_medication_id_fkey"
-            columns: ["medication_id"]
-            isOneToOne: false
-            referencedRelation: "medications"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       medications: {
         Row: {
-          access_count: number
+          access_count: number | null
           arquivo_url: string | null
-          avisos: string | null
+          avisos: Json | null
           composicao: string | null
           created_at: string
           data_extracao: string | null
-          detalhes_atencao: string | null
-          detalhes_criticos: string | null
+          detalhes_atencao: Json | null
+          detalhes_criticos: Json | null
           id: string
           nivel_alerta: string | null
           nome_alternativo: string | null
           nome_completo: string | null
-          nome_principal: string
+          nome_principal: string | null
           tem_risco_aplv: boolean | null
-          termos_encontrados: string | null
+          termos_encontrados: Json | null
           updated_at: string
         }
         Insert: {
-          access_count?: number
+          access_count?: number | null
           arquivo_url?: string | null
-          avisos?: string | null
+          avisos?: Json | null
           composicao?: string | null
           created_at?: string
           data_extracao?: string | null
-          detalhes_atencao?: string | null
-          detalhes_criticos?: string | null
+          detalhes_atencao?: Json | null
+          detalhes_criticos?: Json | null
           id?: string
           nivel_alerta?: string | null
           nome_alternativo?: string | null
           nome_completo?: string | null
-          nome_principal: string
+          nome_principal?: string | null
           tem_risco_aplv?: boolean | null
-          termos_encontrados?: string | null
+          termos_encontrados?: Json | null
           updated_at?: string
         }
         Update: {
-          access_count?: number
+          access_count?: number | null
           arquivo_url?: string | null
-          avisos?: string | null
+          avisos?: Json | null
           composicao?: string | null
           created_at?: string
           data_extracao?: string | null
-          detalhes_atencao?: string | null
-          detalhes_criticos?: string | null
+          detalhes_atencao?: Json | null
+          detalhes_criticos?: Json | null
           id?: string
           nivel_alerta?: string | null
           nome_alternativo?: string | null
           nome_completo?: string | null
-          nome_principal?: string
+          nome_principal?: string | null
           tem_risco_aplv?: boolean | null
-          termos_encontrados?: string | null
+          termos_encontrados?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          access_count: number | null
+          avisos: Json | null
+          composicao: string | null
+          created_at: string
+          id: string
+          nivel_alerta: string | null
+          nome_alternativo: string | null
+          nome_completo: string | null
+          nome_principal: string | null
+          tem_risco_aplv: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          access_count?: number | null
+          avisos?: Json | null
+          composicao?: string | null
+          created_at?: string
+          id?: string
+          nivel_alerta?: string | null
+          nome_alternativo?: string | null
+          nome_completo?: string | null
+          nome_principal?: string | null
+          tem_risco_aplv?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          access_count?: number | null
+          avisos?: Json | null
+          composicao?: string | null
+          created_at?: string
+          id?: string
+          nivel_alerta?: string | null
+          nome_alternativo?: string | null
+          nome_completo?: string | null
+          nome_principal?: string | null
+          tem_risco_aplv?: boolean | null
           updated_at?: string
         }
         Relationships: []
@@ -233,40 +189,130 @@ export type Database = {
         Row: {
           allergy_info: string | null
           avatar_url: string | null
+          birth_date: string | null
           child_name: string | null
+          city: string | null
           created_at: string
           full_name: string | null
+          gender: string | null
           id: string
           observation: string | null
           phone: string | null
+          profession: string | null
           profile_type: string | null
+          state: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           allergy_info?: string | null
           avatar_url?: string | null
+          birth_date?: string | null
           child_name?: string | null
+          city?: string | null
           created_at?: string
           full_name?: string | null
+          gender?: string | null
           id?: string
           observation?: string | null
           phone?: string | null
+          profession?: string | null
           profile_type?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           allergy_info?: string | null
           avatar_url?: string | null
+          birth_date?: string | null
           child_name?: string | null
+          city?: string | null
           created_at?: string
           full_name?: string | null
+          gender?: string | null
           id?: string
           observation?: string | null
           phone?: string | null
+          profession?: string | null
           profile_type?: string | null
+          state?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      restaurants: {
+        Row: {
+          access_count: number | null
+          avisos: Json | null
+          created_at: string
+          descricao: string | null
+          endereco: string | null
+          id: string
+          nivel_alerta: string | null
+          nome_alternativo: string | null
+          nome_completo: string | null
+          nome_principal: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_count?: number | null
+          avisos?: Json | null
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          nivel_alerta?: string | null
+          nome_alternativo?: string | null
+          nome_completo?: string | null
+          nome_principal?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_count?: number | null
+          avisos?: Json | null
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          nivel_alerta?: string | null
+          nome_alternativo?: string | null
+          nome_completo?: string | null
+          nome_principal?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      solicitado_inclusao: {
+        Row: {
+          composicao: string | null
+          created_at: string
+          id: string
+          imagem_url: string | null
+          nome: string | null
+          status: string | null
+          tipo: string | null
+          user_id: string
+        }
+        Insert: {
+          composicao?: string | null
+          created_at?: string
+          id?: string
+          imagem_url?: string | null
+          nome?: string | null
+          status?: string | null
+          tipo?: string | null
+          user_id: string
+        }
+        Update: {
+          composicao?: string | null
+          created_at?: string
+          id?: string
+          imagem_url?: string | null
+          nome?: string | null
+          status?: string | null
+          tipo?: string | null
           user_id?: string
         }
         Relationships: []
@@ -294,17 +340,17 @@ export type Database = {
       }
       user_onboarding: {
         Row: {
-          completed_at: string
+          completed_at: string | null
           id: string
           user_id: string
         }
         Insert: {
-          completed_at?: string
+          completed_at?: string | null
           id?: string
           user_id: string
         }
         Update: {
-          completed_at?: string
+          completed_at?: string | null
           id?: string
           user_id?: string
         }
@@ -318,7 +364,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
@@ -340,10 +386,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      increment_medication_access: {
-        Args: { med_id: string }
-        Returns: undefined
-      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
@@ -362,12 +404,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -391,11 +433,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -416,11 +458,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -441,11 +483,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -458,11 +500,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
